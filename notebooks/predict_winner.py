@@ -50,21 +50,18 @@ else:
 #    Names are mapped to the spellings used in results.csv:
 #      Korea Republic -> South Korea     Côte d'Ivoire -> Ivory Coast
 #      Czechia        -> Czech Republic  Cabo Verde    -> Cape Verde
-#      Congo DR       -> DR Congo        Türkiye       -> Turkey
+#      Congo          -> DR Congo        Türkiye       -> Turkey
 #      USA            -> United States   IR Iran       -> Iran
 #
-#    Six slots were still undecided playoff paths at draw time; the
-#    strongest likely qualifier was chosen for each (edit to taste):
-#      A4 Denmark   B2 Italy   D4 Turkey
-#      F3 Poland    I3 Iraq    K2 DR Congo
+#    (Group K "Congo" is the DR Congo playoff winner, not Rep. of Congo.)
 # ----------------------------------------------------------------------
 bracket = {
-    "A": ["Mexico", "South Africa", "South Korea", "Denmark"],
-    "B": ["Canada", "Italy", "Qatar", "Switzerland"],
+    "A": ["Mexico", "South Africa", "South Korea", "Czech Republic"],
+    "B": ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
     "C": ["Brazil", "Morocco", "Haiti", "Scotland"],
-    "D": ["United States", "Paraguay", "Australia", "Turkey"],
+    "D": ["United States", "Paraguay", "Turkey", "Australia"],
     "E": ["Germany", "Curaçao", "Ivory Coast", "Ecuador"],
-    "F": ["Netherlands", "Japan", "Poland", "Tunisia"],
+    "F": ["Netherlands", "Japan", "Sweden", "Tunisia"],
     "G": ["Belgium", "Egypt", "Iran", "New Zealand"],
     "H": ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"],
     "I": ["France", "Senegal", "Iraq", "Norway"],
