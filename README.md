@@ -157,6 +157,7 @@ The [`blogs/`](blogs/) folder documents the project as it was built:
 7. [Fixing the favourite](blogs/07_fixing_the_favourite.md) — weighting & backtest tuning
 8. [Why it still doesn't make sense](blogs/08_why_it_still_doesnt_make_sense.md) — the post-mortem
 9. [The ensemble](blogs/09_the_ensemble.md) — Elo + XGBoost, and the fix that worked
+10. [The final prediction](blogs/10_the_final_prediction.md) — the 2026 forecast & measuring what matters
 
 ---
 
