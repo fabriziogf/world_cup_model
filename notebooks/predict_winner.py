@@ -42,19 +42,30 @@ else:
 
 
 # ----------------------------------------------------------------------
-# 3. Define the tournament bracket (8 groups of 4)
-#    Replace these with the actual draw. Team names must match the
-#    spelling used in results.csv.
+# 3. Define the tournament bracket
+#
+#    The 2026 World Cup has 48 teams in 12 groups of 4 (labelled A-L). The
+#    top 2 from each group plus the 8 best third-placed teams advance to a
+#    Round of 32, then R16, QF, SF, Final.
+#
+#    >>> REPLACE THIS PLACEHOLDER WITH THE OFFICIAL DRAW. <<<
+#    Team names must match the spelling used in results.csv.
+#    (An 8-group bracket of 4 still works too — the simulator detects the
+#     32-team format automatically.)
 # ----------------------------------------------------------------------
 bracket = {
-    "A": ["Qatar", "Ecuador", "Senegal", "Netherlands"],
-    "B": ["England", "Iran", "United States", "Wales"],
-    "C": ["Argentina", "Saudi Arabia", "Mexico", "Poland"],
-    "D": ["France", "Australia", "Denmark", "Tunisia"],
-    "E": ["Spain", "Costa Rica", "Germany", "Japan"],
-    "F": ["Belgium", "Canada", "Morocco", "Croatia"],
-    "G": ["Brazil", "Serbia", "Switzerland", "Cameroon"],
-    "H": ["Portugal", "Ghana", "Uruguay", "South Korea"],
+    "A": ["Mexico", "Croatia", "Ecuador", "Iran"],
+    "B": ["Canada", "Belgium", "Morocco", "Japan"],
+    "C": ["United States", "Netherlands", "Senegal", "Saudi Arabia"],
+    "D": ["Brazil", "Switzerland", "Nigeria", "Qatar"],
+    "E": ["Argentina", "Denmark", "Tunisia", "Australia"],
+    "F": ["France", "Serbia", "Ghana", "South Korea"],
+    "G": ["Spain", "Uruguay", "Cameroon", "Wales"],
+    "H": ["England", "Poland", "Ivory Coast", "Costa Rica"],
+    "I": ["Portugal", "Sweden", "Egypt", "Panama"],
+    "J": ["Germany", "Colombia", "Algeria", "New Zealand"],
+    "K": ["Ukraine", "Peru", "Mali", "Jordan"],
+    "L": ["Italy", "Chile", "South Africa", "Honduras"],
 }
 
 

@@ -160,3 +160,76 @@ def test_known_result_respected_in_group():
 
     # With 9 points, the outsider should advance in the vast majority of sims
     assert p_out_r16 > 0.9
+
+
+# ======================================================================
+# 48-team format (12 groups, 2026 World Cup)
+# ======================================================================
+
+# 12 groups of 4 = 48 teams. Generic team names keep the test self-contained.
+GROUPS_48 = {
+    chr(65 + g): [f"T{g * 4 + i}" for i in range(4)]
+    for g in range(12)
+}
+ALL_TEAMS_48 = [t for teams in GROUPS_48.values() for t in teams]
+FAV_48 = "T0"
+OUT_48 = "T47"
+
+
+def _engineered_model_48() -> DixonColes:
+    model = DixonColes()
+    attack  = {t: 0.0 for t in ALL_TEAMS_48}
+    defense = {t: 0.0 for t in ALL_TEAMS_48}
+    attack[FAV_48] = 1.2;  defense[FAV_48] = -1.2
+    attack[OUT_48] = -1.2; defense[OUT_48] = 1.2
+    model.teams_ = sorted(ALL_TEAMS_48)
+    model.params_ = {"attack": attack, "defense": defense, "home_adv": 0.1, "rho": -0.1}
+    model.is_fitted_ = True
+    return model
+
+
+@pytest.fixture(scope="module")
+def sim_result_48():
+    model = _engineered_model_48()
+    sim = TournamentSimulator(model=model, n_simulations=3000, seed=42)
+    return sim.simulate(GROUPS_48)
+
+
+def test_48_has_round_of_32_column(sim_result_48):
+    """The 48-team format exposes a p_r32 stage that the 32-team one does not."""
+    assert "p_r32" in sim_result_48.columns
+
+
+def test_48_stage_sums(sim_result_48):
+    """
+    24 group qualifiers + 8 best thirds = 32 enter the knockout; the round
+    sizes halve cleanly down to a single champion.
+    """
+    assert sim_result_48["p_r32"].sum()        == pytest.approx(32.0, abs=1e-9)
+    assert sim_result_48["p_r16"].sum()        == pytest.approx(16.0, abs=1e-9)
+    assert sim_result_48["p_quarter"].sum()    == pytest.approx(8.0,  abs=1e-9)
+    assert sim_result_48["p_semi"].sum()       == pytest.approx(4.0,  abs=1e-9)
+    assert sim_result_48["p_final"].sum()      == pytest.approx(2.0,  abs=1e-9)
+    assert sim_result_48["p_win"].sum()        == pytest.approx(1.0,  abs=1e-9)
+    # 48 teams - 32 advancing = 16 eliminated in the group stage
+    assert sim_result_48["p_group_exit"].sum() == pytest.approx(16.0, abs=1e-9)
+
+
+def test_48_all_teams_present(sim_result_48):
+    assert set(sim_result_48["team"]) == set(ALL_TEAMS_48)
+    assert len(sim_result_48) == 48
+
+
+def test_48_favourite_wins_most(sim_result_48):
+    assert sim_result_48.iloc[0]["team"] == FAV_48
+    p_out = sim_result_48.set_index("team").loc[OUT_48, "p_win"]
+    assert sim_result_48.iloc[0]["p_win"] > p_out
+
+
+def test_unsupported_group_count_raises():
+    """A bracket that is neither 8 nor 12 groups is rejected."""
+    model = _engineered_model_48()
+    sim = TournamentSimulator(model=model, n_simulations=10, seed=0)
+    bad = {chr(65 + g): [f"T{g * 4 + i}" for i in range(4)] for g in range(10)}
+    with pytest.raises(ValueError):
+        sim.simulate(bad)
