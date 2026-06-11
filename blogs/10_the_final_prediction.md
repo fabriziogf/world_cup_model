@@ -19,6 +19,8 @@ After nine parts of building, breaking, and rebuilding, here is the model's fina
 
 The reigning champions, Argentina, are the favourites at 17.1%, clear of Spain and France. Brazil, England, Portugal, and Germany round out a top seven that any football fan would recognise as *the contenders*. The full table runs all the way down to Curaçao at 0.004%.
 
+*(A confession from the author, typed through gritted teeth: I am Brazilian, and after ten parts of painstaking work my own model has the audacity to put **Argentina** first and Brazil a distant fourth. I re-ran it. Several times. The seed didn't care about my feelings. Some biases, it turns out, you cannot vectorize away.)*
+
 A few things worth noting beyond the headline:
 
 - **It's a wide-open field.** Even the favourite wins only about one time in six. A 17% favourite means Argentina fails to lift the trophy in roughly five of every six simulated tournaments — exactly the uncertainty a knockout tournament deserves.
