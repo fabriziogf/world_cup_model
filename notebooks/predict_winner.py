@@ -42,30 +42,35 @@ else:
 
 
 # ----------------------------------------------------------------------
-# 3. Define the tournament bracket
+# 3. Define the tournament bracket — official 2026 World Cup draw
 #
-#    The 2026 World Cup has 48 teams in 12 groups of 4 (labelled A-L). The
-#    top 2 from each group plus the 8 best third-placed teams advance to a
-#    Round of 32, then R16, QF, SF, Final.
+#    48 teams in 12 groups of 4 (A-L). Top 2 per group plus the 8 best
+#    third-placed teams advance to a Round of 32, then R16, QF, SF, Final.
 #
-#    >>> REPLACE THIS PLACEHOLDER WITH THE OFFICIAL DRAW. <<<
-#    Team names must match the spelling used in results.csv.
-#    (An 8-group bracket of 4 still works too — the simulator detects the
-#     32-team format automatically.)
+#    Names are mapped to the spellings used in results.csv:
+#      Korea Republic -> South Korea     Côte d'Ivoire -> Ivory Coast
+#      Czechia        -> Czech Republic  Cabo Verde    -> Cape Verde
+#      Congo DR       -> DR Congo        Türkiye       -> Turkey
+#      USA            -> United States   IR Iran       -> Iran
+#
+#    Six slots were still undecided playoff paths at draw time; the
+#    strongest likely qualifier was chosen for each (edit to taste):
+#      A4 Denmark   B2 Italy   D4 Turkey
+#      F3 Poland    I3 Iraq    K2 DR Congo
 # ----------------------------------------------------------------------
 bracket = {
-    "A": ["Mexico", "Croatia", "Ecuador", "Iran"],
-    "B": ["Canada", "Belgium", "Morocco", "Japan"],
-    "C": ["United States", "Netherlands", "Senegal", "Saudi Arabia"],
-    "D": ["Brazil", "Switzerland", "Nigeria", "Qatar"],
-    "E": ["Argentina", "Denmark", "Tunisia", "Australia"],
-    "F": ["France", "Serbia", "Ghana", "South Korea"],
-    "G": ["Spain", "Uruguay", "Cameroon", "Wales"],
-    "H": ["England", "Poland", "Ivory Coast", "Costa Rica"],
-    "I": ["Portugal", "Sweden", "Egypt", "Panama"],
-    "J": ["Germany", "Colombia", "Algeria", "New Zealand"],
-    "K": ["Ukraine", "Peru", "Mali", "Jordan"],
-    "L": ["Italy", "Chile", "South Africa", "Honduras"],
+    "A": ["Mexico", "South Africa", "South Korea", "Denmark"],
+    "B": ["Canada", "Italy", "Qatar", "Switzerland"],
+    "C": ["Brazil", "Morocco", "Haiti", "Scotland"],
+    "D": ["United States", "Paraguay", "Australia", "Turkey"],
+    "E": ["Germany", "Curaçao", "Ivory Coast", "Ecuador"],
+    "F": ["Netherlands", "Japan", "Poland", "Tunisia"],
+    "G": ["Belgium", "Egypt", "Iran", "New Zealand"],
+    "H": ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"],
+    "I": ["France", "Senegal", "Iraq", "Norway"],
+    "J": ["Argentina", "Algeria", "Austria", "Jordan"],
+    "K": ["Portugal", "DR Congo", "Uzbekistan", "Colombia"],
+    "L": ["England", "Croatia", "Ghana", "Panama"],
 }
 
 
