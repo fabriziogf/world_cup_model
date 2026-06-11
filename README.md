@@ -168,4 +168,7 @@ The [`blogs/`](blogs/) folder documents the project as it was built:
 - [x] Match-importance & confederation strength-of-schedule weighting
 - [x] Backtest-based weight tuning
 - [x] Elo + XGBoost ensemble (backtests better; sensible champion ranking)
-- [ ] **Tournament-level evaluation** (score the champion ranking, not just per-match Brier)
+- [x] Tournament-level evaluation — scores probability on the actual champion.
+      Ensemble assigns 3× the probability to real winners (14.6% vs 4.9%) and
+      ranks them ~3rd vs ~8th across 2014/2018/2022
+      ([`notebooks/evaluate_tournament_level.py`](notebooks/evaluate_tournament_level.py)).
