@@ -22,7 +22,8 @@ why the predictions *still* don't fully make sense.
 | [`src/fast_poisson.py`](src/fast_poisson.py) | **Vectorized** Dixon-Coles fit (~1000× faster than `poisson.py`), with match-importance and confederation strength-of-schedule weighting, plus model caching. |
 | [`src/confederations.py`](src/confederations.py) | Maps national teams to FIFA confederations with relative strength multipliers (strength-of-schedule weighting). |
 | [`src/simulate.py`](src/simulate.py) | `TournamentSimulator` — Monte Carlo bracket engine for both 32-team and 48-team (R32) formats. |
-| [`src/features.py`](src/features.py) | `FeatureBuilder` — leak-free feature pipeline (Elo, form, rest, H2H, …) for the planned XGBoost layer. |
+| [`src/features.py`](src/features.py) | `FeatureBuilder` — leak-free feature pipeline (Elo, form, rest, H2H, …). |
+| [`src/ensemble.py`](src/ensemble.py) | `EloXGBoostModel` — Elo + gradient-boosted-trees ensemble (XGBoost, or scikit-learn fallback). Fixes the Dixon-Coles strength bias. |
 | [`src/evaluate.py`](src/evaluate.py) | `ModelEvaluator` — backtesting and calibration on past World Cups (Brier, log-loss, accuracy, calibration curves). |
 
 ---
@@ -121,21 +122,25 @@ pytest tests/ -v
 
 ---
 
-## Current result (and an honest caveat)
+## Two models, two stories
 
-With backtest-tuned weights on the final 2026 draw, the model's favourites are
-Japan, Morocco, Argentina, Spain, Portugal. **These do not pass the
-football-fan smell test** — Japan as a clear favourite over Brazil, France, and
-England is not plausible.
+**Dixon-Coles** (goals-based) produces a counterintuitive favourite — Japan
+over Brazil, France, and England — because it only sees goals and rewards
+running up scores. That's a known limitation, diagnosed in
+[`blogs/08`](blogs/08_why_it_still_doesnt_make_sense.md).
 
-This is a known and explained limitation, not a bug. The Dixon-Coles model
-reduces each team to a goals-based attack/defense pair, which rewards running
-up scores and underrates efficient low-scoring sides — and per-match Brier
-score is nearly blind to the champion ranking. See
-[`blogs/08_why_it_still_doesnt_make_sense.md`](blogs/08_why_it_still_doesnt_make_sense.md)
-for the full diagnosis. The fix in progress is an **Elo + XGBoost ensemble**
-that swaps the thin goals signal for opponent-adjusted strength plus a learned,
-multi-feature classifier.
+**The Elo + XGBoost ensemble** ([`predict_winner_ensemble.py`](notebooks/predict_winner_ensemble.py))
+fixes it. By swapping the thin goals signal for opponent-adjusted Elo plus a
+learned classifier, it produces a sensible ranking — **Argentina, Spain,
+France, Brazil** on the 2026 draw — and backtests better on 2014/2018/2022
+(Brier 0.2012 vs 0.2084, accuracy 55.7% vs 46.9%). The full story is in
+[`blogs/09`](blogs/09_the_ensemble.md). Run a head-to-head with
+[`notebooks/compare_models.py`](notebooks/compare_models.py).
+
+> **XGBoost note:** on macOS + Anaconda you may hit an OpenMP load error. Fix
+> with `conda install -c conda-forge llvm-openmp`. The ensemble falls back to
+> scikit-learn's `HistGradientBoostingClassifier` automatically if XGBoost
+> can't load.
 
 ---
 
@@ -151,6 +156,7 @@ The [`blogs/`](blogs/) folder documents the project as it was built:
 6. [The first prediction](blogs/06_the_prediction.md)
 7. [Fixing the favourite](blogs/07_fixing_the_favourite.md) — weighting & backtest tuning
 8. [Why it still doesn't make sense](blogs/08_why_it_still_doesnt_make_sense.md) — the post-mortem
+9. [The ensemble](blogs/09_the_ensemble.md) — Elo + XGBoost, and the fix that worked
 
 ---
 
@@ -161,5 +167,5 @@ The [`blogs/`](blogs/) folder documents the project as it was built:
 - [x] 48-team (2026) tournament format
 - [x] Match-importance & confederation strength-of-schedule weighting
 - [x] Backtest-based weight tuning
-- [ ] **Elo + XGBoost ensemble** (next)
-- [ ] Tournament-level evaluation (score the champion ranking, not just per-match Brier)
+- [x] Elo + XGBoost ensemble (backtests better; sensible champion ranking)
+- [ ] **Tournament-level evaluation** (score the champion ranking, not just per-match Brier)
