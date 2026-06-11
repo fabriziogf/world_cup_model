@@ -36,11 +36,58 @@ from typing import Optional
 from src.poisson import DixonColes
 
 
+# Relative importance of a match for the likelihood fit. A World Cup finals
+# match should shape the ratings far more than a friendly. These multipliers
+# scale each match's weight; they are normalised to mean 1 over the dataset
+# so the overall likelihood scale (and optimizer behaviour) stays stable.
+#
+# Matched by substring against the lowercased `tournament` field, most
+# specific first. Unlike Elo's MATCH_WEIGHTS (which keys on underscores that
+# never match the space-separated tournament names in the data), these
+# patterns are written against the actual strings found in results.csv.
+WORLD_CUP_FINALS_WEIGHT = 6.0
+CONTINENTAL_WEIGHT      = 3.5
+QUALIFICATION_WEIGHT    = 2.5
+OTHER_COMPETITIVE_WEIGHT = 2.0
+FRIENDLY_WEIGHT         = 1.0
+
+_CONTINENTAL_KEYWORDS = (
+    "euro", "copa", "cup of nations", "gold cup", "asian cup",
+    "confederations", "nations league", "oceania nations",
+)
+
+
+def match_importance(tournament: str) -> float:
+    """
+    Map a tournament label to a relative importance weight for fitting.
+
+    World Cup finals matches carry the most weight, then continental finals,
+    then qualifiers and other competitive games, with friendlies lowest.
+    """
+    t = str(tournament).lower().strip()
+
+    # World Cup *finals* (exclude qualification rounds)
+    if "world cup" in t and "qualif" not in t:
+        return WORLD_CUP_FINALS_WEIGHT
+    # Any qualification campaign
+    if "qualif" in t:
+        return QUALIFICATION_WEIGHT
+    # Major continental tournaments
+    if any(kw in t for kw in _CONTINENTAL_KEYWORDS):
+        return CONTINENTAL_WEIGHT
+    # Friendlies count least
+    if "friendly" in t:
+        return FRIENDLY_WEIGHT
+    # Everything else competitive
+    return OTHER_COMPETITIVE_WEIGHT
+
+
 def fit_fast(
     df: pd.DataFrame,
     time_decay: float = 0.005,
     reference_date: Optional[pd.Timestamp] = None,
     maxiter: int = 500,
+    use_match_importance: bool = True,
 ) -> DixonColes:
     """
     Fit a Dixon-Coles model via vectorized MLE.
@@ -50,11 +97,15 @@ def fit_fast(
 
     Parameters
     ----------
-    df             : DataFrame with columns date, home_team, away_team,
-                     home_score, away_score
-    time_decay     : Exponential decay weight per day (older matches count less)
-    reference_date : Date to compute time weights from (defaults to max date in df)
-    maxiter        : Max L-BFGS-B iterations (matches DixonColes.fit default)
+    df                   : DataFrame with columns date, home_team, away_team,
+                           home_score, away_score, and (optionally) tournament
+    time_decay           : Exponential decay weight per day (older matches count less)
+    reference_date       : Date to compute time weights from (defaults to max date in df)
+    maxiter              : Max L-BFGS-B iterations (matches DixonColes.fit default)
+    use_match_importance : Weight each match by tournament importance (World Cup >
+                           continental > qualifier > friendly). Requires a
+                           `tournament` column; ignored if absent. This counters
+                           the bias from teams padding records with easy friendlies.
 
     Returns
     -------
@@ -65,6 +116,13 @@ def fit_fast(
 
     ref = reference_date or df["date"].max()
     weights = np.exp(-time_decay * (ref - df["date"]).dt.days.to_numpy())
+
+    # Scale by match importance so competitive fixtures shape the fit more
+    # than friendlies. Normalised to mean 1 to preserve the likelihood scale.
+    if use_match_importance and "tournament" in df.columns:
+        importance = df["tournament"].map(match_importance).to_numpy()
+        importance = importance / importance.mean()
+        weights = weights * importance
 
     teams = sorted(set(df["home_team"]) | set(df["away_team"]))
     n = len(teams)
