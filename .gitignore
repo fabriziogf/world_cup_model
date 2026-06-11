@@ -7,4 +7,5 @@ venv/
 data/results.csv
 *.csv
 !data/.gitkeep
+*.pkl
 .DS_Store

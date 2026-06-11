@@ -15,27 +15,30 @@ import pandas as pd
 # Make src importable when run from the project root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.poisson import DixonColes
+from src.fast_poisson import fit_fast, save_model, load_model
 from src.simulate import TournamentSimulator
 
 
-# ----------------------------------------------------------------------
-# 1. Load historical match data
-# ----------------------------------------------------------------------
-df = pd.read_csv("data/results.csv")
-
-# Optional but recommended: focus on recent matches so the fit reflects
-# current team strength (and so the slow MLE fit runs faster).
-df = df[df["date"] >= "2014-01-01"].copy()
-print(f"Training on {len(df):,} matches since 2014...")
+MODEL_CACHE = "data/dc_model.pkl"
 
 
 # ----------------------------------------------------------------------
-# 2. Fit the Dixon-Coles scoreline model
+# 1 & 2. Load/fit the Dixon-Coles model (vectorized + cached)
+#
+# fit_fast() vectorizes the MLE objective, so fitting ~12k matches takes
+# ~10 seconds instead of hours. The fitted model is cached to disk and
+# reused on subsequent runs — delete data/dc_model.pkl to refit.
 # ----------------------------------------------------------------------
-model = DixonColes(time_decay=0.005)   # older matches count less
-model.fit(df)
-print("Model fitted.")
+if os.path.exists(MODEL_CACHE):
+    model = load_model(MODEL_CACHE)
+    print(f"Loaded cached model from {MODEL_CACHE} ({len(model.teams_)} teams).")
+else:
+    df = pd.read_csv("data/results.csv")
+    df = df[df["date"] >= "2014-01-01"].copy()   # recent form, faster fit
+    print(f"Fitting on {len(df):,} matches since 2014...")
+    model = fit_fast(df, time_decay=0.005)
+    save_model(model, MODEL_CACHE)
+    print(f"Model fitted and cached to {MODEL_CACHE}.")
 
 
 # ----------------------------------------------------------------------
