@@ -90,6 +90,8 @@ def fit_fast(
     maxiter: int = 500,
     use_match_importance: bool = True,
     use_confederation_strength: bool = True,
+    importance_alpha: float = 1.0,
+    confederation_alpha: float = 1.0,
 ) -> DixonColes:
     """
     Fit a Dixon-Coles model via vectorized MLE.
@@ -114,6 +116,11 @@ def fit_fast(
                            results against weaker-region opposition count for less,
                            so a team cannot inflate its rating by beating up on a
                            soft confederation.
+    importance_alpha     : Magnitude knob for importance weighting in [0, 1].
+                           0 disables it (uniform), 1 applies the full multipliers.
+                           Lets the weighting be tuned by backtesting.
+    confederation_alpha  : Magnitude knob for confederation weighting in [0, 1],
+                           same semantics as importance_alpha.
 
     Returns
     -------
@@ -127,18 +134,21 @@ def fit_fast(
 
     # Scale by match importance so competitive fixtures shape the fit more
     # than friendlies. Normalised to mean 1 to preserve the likelihood scale.
-    if use_match_importance and "tournament" in df.columns:
-        importance = df["tournament"].map(match_importance).to_numpy()
+    if use_match_importance and importance_alpha > 0 and "tournament" in df.columns:
+        raw = df["tournament"].map(match_importance).to_numpy()
+        # Blend toward uniform by importance_alpha: alpha=0 -> all 1 (no effect).
+        importance = (1.0 - importance_alpha) + importance_alpha * raw
         importance = importance / importance.mean()
         weights = weights * importance
 
     # Scale by strength of schedule: matches between stronger confederations
     # (UEFA, CONMEBOL) count more than those in weaker regions (AFC, OFC).
     # A match's factor is the mean of the two teams' confederation strengths.
-    if use_confederation_strength:
+    if use_confederation_strength and confederation_alpha > 0:
         home_str = df["home_team"].map(confederation_strength).to_numpy()
         away_str = df["away_team"].map(confederation_strength).to_numpy()
-        conf_factor = (home_str + away_str) / 2.0
+        raw = (home_str + away_str) / 2.0
+        conf_factor = (1.0 - confederation_alpha) + confederation_alpha * raw
         conf_factor = conf_factor / conf_factor.mean()
         weights = weights * conf_factor
 
