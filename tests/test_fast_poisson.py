@@ -100,7 +100,11 @@ def test_fit_fast_matches_slow_fit_without_importance():
     """
     df = _synthetic()
     slow = DixonColes(time_decay=0).fit(df)
-    fast = fit_fast(df, time_decay=0, use_match_importance=False)
+    fast = fit_fast(
+        df, time_decay=0,
+        use_match_importance=False,
+        use_confederation_strength=False,
+    )
     for team in slow.teams_:
         assert fast.params_["attack"][team] == pytest.approx(
             slow.params_["attack"][team], abs=1e-4

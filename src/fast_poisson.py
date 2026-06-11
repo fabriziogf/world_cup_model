@@ -34,6 +34,7 @@ from scipy.special import gammaln
 from typing import Optional
 
 from src.poisson import DixonColes
+from src.confederations import confederation_strength
 
 
 # Relative importance of a match for the likelihood fit. A World Cup finals
@@ -88,6 +89,7 @@ def fit_fast(
     reference_date: Optional[pd.Timestamp] = None,
     maxiter: int = 500,
     use_match_importance: bool = True,
+    use_confederation_strength: bool = True,
 ) -> DixonColes:
     """
     Fit a Dixon-Coles model via vectorized MLE.
@@ -106,6 +108,12 @@ def fit_fast(
                            continental > qualifier > friendly). Requires a
                            `tournament` column; ignored if absent. This counters
                            the bias from teams padding records with easy friendlies.
+    use_confederation_strength : Weight each match by the strength of the
+                           confederations involved (UEFA/CONMEBOL > CAF/CONCACAF >
+                           AFC > OFC). This is a strength-of-schedule correction:
+                           results against weaker-region opposition count for less,
+                           so a team cannot inflate its rating by beating up on a
+                           soft confederation.
 
     Returns
     -------
@@ -123,6 +131,16 @@ def fit_fast(
         importance = df["tournament"].map(match_importance).to_numpy()
         importance = importance / importance.mean()
         weights = weights * importance
+
+    # Scale by strength of schedule: matches between stronger confederations
+    # (UEFA, CONMEBOL) count more than those in weaker regions (AFC, OFC).
+    # A match's factor is the mean of the two teams' confederation strengths.
+    if use_confederation_strength:
+        home_str = df["home_team"].map(confederation_strength).to_numpy()
+        away_str = df["away_team"].map(confederation_strength).to_numpy()
+        conf_factor = (home_str + away_str) / 2.0
+        conf_factor = conf_factor / conf_factor.mean()
+        weights = weights * conf_factor
 
     teams = sorted(set(df["home_team"]) | set(df["away_team"]))
     n = len(teams)
